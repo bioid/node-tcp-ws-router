@@ -5,6 +5,8 @@ var net = require('net'),
 
 var server = net.createServer(function(socket) {
   // socket.setEncoding('ascii');
+      console.log('new connection');
+
       var isWebSocket = false;
       var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
         if (!isWebSocket){        
@@ -16,12 +18,8 @@ var server = net.createServer(function(socket) {
       });
       
       socket.on('data', function(data) {
-        console.log('data: ', data.toString());
         var request = parser.parseRequest(data.toString());
-        console.log('request: ', request);
-
-        // set up the connection to the server
-
+        //console.log('request: ', request);
 
         if (Object.keys(request.headers).length > 0) {
           // HTTP
