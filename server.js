@@ -2,7 +2,7 @@ var net = require('net'),
     crypto = require('crypto'),
     parser = require('http-string-parser'),
     config = require('./config.js'),
-    frame = require('./frame.js');
+    frame = require('./frame/frame.js');
 
 var server = net.createServer(function(socket) {
   // socket.setEncoding('ascii');
