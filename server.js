@@ -1,5 +1,4 @@
 var net = require('net'),
-    http = require('http'),
     crypto = require('crypto'),
     parser = require('http-string-parser'),
     config = require('./config.js');
