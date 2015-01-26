@@ -1,7 +1,7 @@
 var net = require('net');
 
 var server = net.createServer(function(socket) {
-  // socket.setEncoding('utf-8');
+  socket.setEncoding('binary');
   socket.on('data', function(data) {
     console.log('data', data);
     socket.write(data);

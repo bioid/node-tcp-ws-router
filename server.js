@@ -100,6 +100,7 @@ var server = net.createServer(function(socket) {
       }
         else {
           // THIS IS RAW TCP - FORWARD IT AS IS
+          console.log('tcp - message from client:', data);
           client.write(data);
           console.log('tcp - forwarded data to server');
         }
