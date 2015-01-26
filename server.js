@@ -93,7 +93,7 @@ var server = net.createServer(function(socket) {
             console.log('ws - parsed message:', payload.toString());
 
             // create a tcp connection and forward the data
-            client.write(payload.toString());
+            client.write(payload);
             console.log('ws - forwarded websocket message to tcp server');
           };
         }
