@@ -1,7 +1,8 @@
 var net = require('net'),
     crypto = require('crypto'),
     parser = require('http-string-parser'),
-    config = require('./config.js');
+    config = require('./config.js'),
+    frame = require('./frame.js');
 
 var server = net.createServer(function(socket) {
   // socket.setEncoding('ascii');
@@ -9,15 +10,22 @@ var server = net.createServer(function(socket) {
 
       var isWebSocket = false;
       var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
-        if (!isWebSocket){        
           client.on('data', function(data) {
-            socket.write(data);
-            console.log('tcp - data from server forwarded to client');
+            // data from the TCP server - send to the client
+            if (!isWebSocket) {
+              socket.write(data);
+              console.log('tcp - data from server forwarded to client');
+            }
+            else {
+              // construct the websocket frame to send here
+              binaryFrame = frame.createBinaryFrame(data, false, true, true);
+              socket.write(binaryFrame);
+            }
           });
-        }
       });
       
       socket.on('data', function(data) {
+        // data from the client - send to the tcp server
         var request = parser.parseRequest(data.toString());
         //console.log('request: ', request);
 
