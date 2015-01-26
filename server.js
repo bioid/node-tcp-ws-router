@@ -75,7 +75,7 @@ var server = net.createServer(function(socket) {
         // create a tcp connection and forward the data
         var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
           client.write(payload.toString());
-          console.log('ws - forwarded websocket message to tcp server')
+          console.log('ws - forwarded websocket message to tcp server');
         });
       };
     }
@@ -85,7 +85,12 @@ var server = net.createServer(function(socket) {
       console.log('tcp - tcp connection detected');
       var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
           client.write(data);
-          console.log('tcp - forwarded tcp data to tcp server')
+          console.log('tcp - forwarded tcp data to tcp server');
+          client.on('data', function(data) {
+            console.log('tcp - received tcp data from server', data.toString());
+            socket.write(data);
+            console.log('tcp - forwarded tcp data to client');
+          });
       });
     }
   });
