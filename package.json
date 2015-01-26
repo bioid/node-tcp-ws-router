@@ -1,0 +1,14 @@
+{
+  "name": "tcp-ws-route",
+  "version": "0.0.1",
+  "description": "accepts websocket or tcp connections and routes the data to a tcp server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "brandon hinshaw",
+  "license": "MIT",
+  "dependencies": {
+    "http-string-parser": "0.0.4"
+  }
+}
