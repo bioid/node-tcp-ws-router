@@ -9,6 +9,7 @@
   "author": "brandon hinshaw",
   "license": "MIT",
   "dependencies": {
-    "http-string-parser": "0.0.4"
+    "http-string-parser": "0.0.4",
+    "websocket-driver": "~0.5.1"
   }
 }
