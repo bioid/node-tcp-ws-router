@@ -5,10 +5,8 @@ var net = require('net'),
 
 
 var server = net.createServer(function(socket) {
-  // socket.setEncoding('ascii');
-  console.log('new connection');
-  var driver = websocket.server({'protocols':'binary'});
   socket.isWebSocket = false;
+  var driver = websocket.server({'protocols':'binary'});
 
   var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
     // client is the connection to the destination TCP server
@@ -49,21 +47,20 @@ var server = net.createServer(function(socket) {
       console.log('tcp - forwarded data to server');
     }
   });
+  driver.on('message', function(ev) {
+    // WS MESSAGE - FORWARD IT TO SERVER    
+    console.log('ws - message from client', ev.data);
+    client.write(ev.data);
+    console.log('ws - forwarded data to server');
+  });
 
   driver.on('close', function(ev) {
     socket.end();
   });
 
-  driver.on('message', function(ev) {
-    console.log(ev);
-    client.write(ev.data);
-  });
-
   socket.on('error', function(ev) { console.log(ev); });
 
   socket.pipe(driver.io).pipe(socket);
-
-  driver.messages.pipe(driver.messages);
 });
 
 server.listen(config.LISTEN_PORT);
