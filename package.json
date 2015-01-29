@@ -11,6 +11,7 @@
   "dependencies": {
     "http-string-parser": "0.0.4",
     "websocket-driver": "~0.5.1",
-    "yargs": "~1.3.3"
+    "yargs": "~1.3.3",
+    "hexdump-nodejs": "~0.1.0"
   }
 }

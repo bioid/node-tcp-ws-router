@@ -2,6 +2,7 @@ var net = require('net'),
     parser = require('http-string-parser'),
     websocket = require('websocket-driver'),
     argv = require('yargs').argv,
+    hexdump = require('hexdump-nodejs'),
     config = require('./config.js');
 
 
@@ -17,7 +18,7 @@ var server = net.createServer(function(socket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
           if (argv.debug) {
-            console.log(new Date(Date.now()) + ' - server -> client', data);
+            console.log(new Date(Date.now()) + ' - server -> client\n', hexdump(data));
           }
 
           //console.log('tcp - data from server forwarded to client');
@@ -54,7 +55,7 @@ var server = net.createServer(function(socket) {
       //console.log('tcp - message from client:', data);
       client.write(data);
       if (argv.debug) {
-        console.log(new Date(Date.now()) + ' - client -> server', data);
+        console.log(new Date(Date.now()) + ' - client -> server\n', hexdump(data));
       }
       //console.log('tcp - forwarded data to server');
     }
