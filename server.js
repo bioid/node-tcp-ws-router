@@ -75,11 +75,15 @@ var server = net.createServer(function(socket) {
   driver.on('close', function(ev) {
     socket.end();
     client.end();
-    console.log('websocket closed');
+    if (argv.debug && argv.debug != 'hexonly') {
+      console.log('websocket closed');
+    }
   });
 
   socket.on('close', function(ev) {
-    console.log('socket to client closed');
+    if (argv.debug && argv.debug != 'hexonly') {
+      console.log('socket to client closed');
+    }
     socket.end();
     client.end();
   });
