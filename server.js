@@ -64,4 +64,4 @@ var server = net.createServer(function(socket) {
 });
 
 server.listen(config.LISTEN_PORT);
-console.log('ws/tcp router listening on '+ config.LISTEN_PORT +' - routing to localhost:4343');
+console.log('ws/tcp router listening on '+ config.LISTEN_PORT +' - routing to '+ config.TCP_SERVER.HOST +':'+ config.TCP_SERVER.PORT);
