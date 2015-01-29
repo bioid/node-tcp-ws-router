@@ -15,12 +15,12 @@ var server = net.createServer(function(socket) {
         if (!socket.isWebSocket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
-          console.log('tcp - data from server forwarded to client');
+          //console.log('tcp - data from server forwarded to client');
         }
         else {
           // our client is connection through ws, send the data with ws
           driver.binary(data);
-          console.log('ws - data from server forwarded to client');
+          //console.log('ws - data from server forwarded to client');
         }
       });
   });
@@ -30,7 +30,7 @@ var server = net.createServer(function(socket) {
     if (websocket.isWebSocket(driver)) {
       socket.isWebSocket = true;
       driver.start();
-      console.log('websocket conn');
+      //console.log('websocket conn');
     }
     else{ console.log(driver); }
   });
@@ -38,20 +38,20 @@ var server = net.createServer(function(socket) {
   socket.on('data', function(data) {
     var request = parser.parseRequest(data.toString());
     // console.log(request);
-    console.log('headers', Object.keys(request.headers).length)
+    //console.log('headers', Object.keys(request.headers).length)
     if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
       // TCP
       // THIS IS RAW TCP - FORWARD IT AS IS
-      console.log('tcp - message from client:', data);
+      //console.log('tcp - message from client:', data);
       client.write(data);
-      console.log('tcp - forwarded data to server');
+      //console.log('tcp - forwarded data to server');
     }
   });
   driver.on('message', function(ev) {
     // WS MESSAGE - FORWARD IT TO SERVER    
-    console.log('ws - message from client', ev.data);
+    //console.log('ws - message from client', ev.data);
     client.write(ev.data);
-    console.log('ws - forwarded data to server');
+    //console.log('ws - forwarded data to server');
   });
 
   driver.on('close', function(ev) {
