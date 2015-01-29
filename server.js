@@ -23,6 +23,10 @@ var server = net.createServer(function(socket) {
           //console.log('ws - data from server forwarded to client');
         }
       });
+      client.on('close', function(ev) {
+        console.log('socket to server closed');
+        client.end();
+      });
   });
 
   driver.on('connect', function() {
@@ -56,8 +60,20 @@ var server = net.createServer(function(socket) {
 
   driver.on('close', function(ev) {
     socket.end();
+    client.end();
+    console.log('websocket closed');
   });
 
+  socket.on('close', function(ev) {
+    console.log('socket to client closed');
+    socket.end();
+    client.end();
+  });
+
+  client.on('close', function(ev) {
+    client.end();
+    socket.end();
+  });
   socket.on('error', function(ev) { console.log(ev); });
 
   socket.pipe(driver.io).pipe(socket);
