@@ -2,8 +2,8 @@ var config = {
 	LISTEN_PORT: 8088,
   TCP_SERVER:
     {
-      HOST: 'ppp.lnq.to',
-      PORT: 12347
+      HOST: 'localhost',
+      PORT: 4343
     }
 }
 module.exports = config;

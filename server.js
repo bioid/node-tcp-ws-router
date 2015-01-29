@@ -3,12 +3,16 @@ var net = require('net'),
     websocket = require('websocket-driver'),
     argv = require('yargs').argv,
     hexdump = require('hexdump-nodejs'),
+    hexy = require('hexy'),
     config = require('./config.js');
 
+var formatDate = function(date) {
+  return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+};
 
 var server = net.createServer(function(socket) {
   socket.isWebSocket = false;
-  // var driver = websocket.server({'protocols':'binary'});
+  var driver = websocket.server({'protocols':'binary'});
 
   var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
     // client is the connection to the destination TCP server
@@ -18,7 +22,8 @@ var server = net.createServer(function(socket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
           if (argv.debug) {
-            console.log(new Date(Date.now()) + ' - server -> client\n', hexdump(data));
+            var date = new Date(Date.now());
+            console.log(formatDate(date) + '\n', hexy.hexy(data));
           }
 
           //console.log('tcp - data from server forwarded to client');
@@ -30,7 +35,9 @@ var server = net.createServer(function(socket) {
         }
       });
       client.on('close', function(ev) {
-        console.log('socket to server closed');
+        if (argv.debug && argv.debug != 'hexonly') {
+          console.log('socket to server closed');
+        }
         client.end();
       });
   });
@@ -47,31 +54,29 @@ var server = net.createServer(function(socket) {
 
   socket.on('data', function(data) {
     var request = parser.parseRequest(data.toString());
-    // console.log(request);
-    //console.log('headers', Object.keys(request.headers).length)
     if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
       // TCP
       // THIS IS RAW TCP - FORWARD IT AS IS
-      //console.log('tcp - message from client:', data);
       client.write(data);
       if (argv.debug) {
-        console.log(new Date(Date.now()) + ' - client -> server\n', hexdump(data));
+        // console.log(new Date(Date.now()) + ' - client -> server\n', hexdump(data));
+        var date = new Date(Date.now());
+        console.log(formatDate(date) + '\n', hexy.hexy(data));
       }
-      //console.log('tcp - forwarded data to server');
     }
   });
-  // driver.on('message', function(ev) {
-  //   // WS MESSAGE - FORWARD IT TO SERVER    
-  //   //console.log('ws - message from client', ev.data);
-  //   client.write(ev.data);
-  //   //console.log('ws - forwarded data to server');
-  // });
+  driver.on('message', function(ev) {
+    // WS MESSAGE - FORWARD IT TO SERVER    
+    //console.log('ws - message from client', ev.data);
+    client.write(ev.data);
+    //console.log('ws - forwarded data to server');
+  });
 
-  // driver.on('close', function(ev) {
-  //   socket.end();
-  //   client.end();
-  //   console.log('websocket closed');
-  // });
+  driver.on('close', function(ev) {
+    socket.end();
+    client.end();
+    console.log('websocket closed');
+  });
 
   socket.on('close', function(ev) {
     console.log('socket to client closed');
@@ -85,9 +90,11 @@ var server = net.createServer(function(socket) {
   });
   socket.on('error', function(ev) { console.log(ev); });
 
-  // socket.pipe(driver.io).pipe(socket);
+  socket.pipe(driver.io).pipe(socket);
 
 });
 
 server.listen(config.LISTEN_PORT);
-console.log('ws/tcp router listening on '+ config.LISTEN_PORT +' - routing to '+ config.TCP_SERVER.HOST +':'+ config.TCP_SERVER.PORT);
+if (argv.debug != 'hexonly') {
+  console.log('ws/tcp router listening on '+ config.LISTEN_PORT +' - routing to '+ config.TCP_SERVER.HOST +':'+ config.TCP_SERVER.PORT);
+}

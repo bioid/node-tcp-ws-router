@@ -12,6 +12,7 @@
     "http-string-parser": "0.0.4",
     "websocket-driver": "~0.5.1",
     "yargs": "~1.3.3",
-    "hexdump-nodejs": "~0.1.0"
+    "hexdump-nodejs": "~0.1.0",
+    "hexy": "~0.2.7"
   }
 }
