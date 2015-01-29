@@ -8,7 +8,7 @@ var net = require('net'),
 
 var server = net.createServer(function(socket) {
   socket.isWebSocket = false;
-  var driver = websocket.server({'protocols':'binary'});
+  // var driver = websocket.server({'protocols':'binary'});
 
   var client = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
     // client is the connection to the destination TCP server
@@ -25,7 +25,7 @@ var server = net.createServer(function(socket) {
         }
         else {
           // our client is connection through ws, send the data with ws
-          driver.binary(data);
+          // driver.binary(data);
           //console.log('ws - data from server forwarded to client');
         }
       });
@@ -35,15 +35,15 @@ var server = net.createServer(function(socket) {
       });
   });
 
-  driver.on('connect', function() {
-    // if the connection is a websocket, let the driver handle it
-    if (websocket.isWebSocket(driver)) {
-      socket.isWebSocket = true;
-      driver.start();
-      //console.log('websocket conn');
-    }
-    else{ console.log(driver); }
-  });
+  // driver.on('connect', function() {
+  //   // if the connection is a websocket, let the driver handle it
+  //   if (websocket.isWebSocket(driver)) {
+  //     socket.isWebSocket = true;
+  //     driver.start();
+  //     //console.log('websocket conn');
+  //   }
+  //   else{ console.log(driver); }
+  // });
 
   socket.on('data', function(data) {
     var request = parser.parseRequest(data.toString());
@@ -60,18 +60,18 @@ var server = net.createServer(function(socket) {
       //console.log('tcp - forwarded data to server');
     }
   });
-  driver.on('message', function(ev) {
-    // WS MESSAGE - FORWARD IT TO SERVER    
-    //console.log('ws - message from client', ev.data);
-    client.write(ev.data);
-    //console.log('ws - forwarded data to server');
-  });
+  // driver.on('message', function(ev) {
+  //   // WS MESSAGE - FORWARD IT TO SERVER    
+  //   //console.log('ws - message from client', ev.data);
+  //   client.write(ev.data);
+  //   //console.log('ws - forwarded data to server');
+  // });
 
-  driver.on('close', function(ev) {
-    socket.end();
-    client.end();
-    console.log('websocket closed');
-  });
+  // driver.on('close', function(ev) {
+  //   socket.end();
+  //   client.end();
+  //   console.log('websocket closed');
+  // });
 
   socket.on('close', function(ev) {
     console.log('socket to client closed');
@@ -85,7 +85,7 @@ var server = net.createServer(function(socket) {
   });
   socket.on('error', function(ev) { console.log(ev); });
 
-  socket.pipe(driver.io).pipe(socket);
+  // socket.pipe(driver.io).pipe(socket);
 
 });
 
