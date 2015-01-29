@@ -61,6 +61,11 @@ var server = net.createServer(function(socket) {
   socket.on('error', function(ev) { console.log(ev); });
 
   socket.pipe(driver.io).pipe(socket);
+
+  setInterval(function() { 
+    console.log('buffersize(router <-> client)', socket.bufferSize);
+    console.log('buffersize(router <-> server', socket.bufferSize);
+  }, 5000);
 });
 
 server.listen(config.LISTEN_PORT);
