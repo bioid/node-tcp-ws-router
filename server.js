@@ -10,7 +10,8 @@ var formatDate = function(date) {
   return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
 };
 
-var logHex = function(date, data) {
+var logHex = function(data) {
+  var date = new Date(Date.now());
   return console.log(formatDate(date), hexy.hexy(data, {format: 'twos'}));
 }
 
@@ -26,7 +27,7 @@ var server = net.createServer(function(socket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
           if (argv.debug) {
-            logHex(new Date(Date.now()), data);
+            logHex(data);
           }
 
           //console.log('tcp - data from server forwarded to client');
@@ -62,7 +63,7 @@ var server = net.createServer(function(socket) {
       // THIS IS RAW TCP - FORWARD IT AS IS
       client.write(data);
       if (argv.debug) {
-        logHex(new Date(Date.now()), data);
+        logHex(data);
       }
     }
   });
