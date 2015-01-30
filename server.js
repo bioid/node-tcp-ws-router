@@ -2,17 +2,32 @@ var net = require('net'),
     parser = require('http-string-parser'),
     websocket = require('websocket-driver'),
     argv = require('yargs').argv,
-    hexdump = require('hexdump-nodejs'),
+    fs = require('fs'),
     hexy = require('hexy'),
     config = require('./config.js');
+
+var streams = {}
+
+if (argv.server) {
+  streams.server = fs.createWriteStream(argv.server);
+}
+
+if (argv.client) {
+  streams.client = fs.createWriteStream(argv.client);
+}
 
 var formatDate = function(date) {
   return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
 };
 
-var logHex = function(data) {
-  var date = new Date(Date.now());
-  return console.log(formatDate(date), hexy.hexy(data, {format: 'twos'}));
+var logHex = function(data, conn) {
+  var hex = formatDate(new Date(Date.now())) + ' ' + hexy.hexy(data, {format: 'twos'});
+  if (conn && argv[conn]) {
+    streams[conn].write(hex);
+  }
+  else {
+    return console.log(hex);
+  }
 }
 
 var server = net.createServer(function(socket) {
@@ -23,19 +38,18 @@ var server = net.createServer(function(socket) {
     // client is the connection to the destination TCP server
       client.on('data', function(data) {
         // data from the TCP server - send to the client
+        if (argv.debug) {
+          logHex(data, 'server');
+        }
         if (!socket.isWebSocket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
-          if (argv.debug) {
-            logHex(data);
-          }
 
           //console.log('tcp - data from server forwarded to client');
         }
         else {
           // our client is connection through ws, send the data with ws
-          // driver.binary(data);
-          //console.log('ws - data from server forwarded to client');
+          driver.binary(data);
         }
       });
       client.on('close', function(ev) {
@@ -46,15 +60,13 @@ var server = net.createServer(function(socket) {
       });
   });
 
-  // driver.on('connect', function() {
-  //   // if the connection is a websocket, let the driver handle it
-  //   if (websocket.isWebSocket(driver)) {
-  //     socket.isWebSocket = true;
-  //     driver.start();
-  //     //console.log('websocket conn');
-  //   }
-  //   else{ console.log(driver); }
-  // });
+  driver.on('connect', function() {
+    // if the connection is a websocket, let the driver handle it
+    if (websocket.isWebSocket(driver)) {
+      socket.isWebSocket = true;
+      driver.start();
+    }
+  });
 
   socket.on('data', function(data) {
     var request = parser.parseRequest(data.toString());
@@ -63,15 +75,16 @@ var server = net.createServer(function(socket) {
       // THIS IS RAW TCP - FORWARD IT AS IS
       client.write(data);
       if (argv.debug) {
-        logHex(data);
+        logHex(data, 'client');
       }
     }
   });
+
   driver.on('message', function(ev) {
-    // WS MESSAGE - FORWARD IT TO SERVER    
-    //console.log('ws - message from client', ev.data);
     client.write(ev.data);
-    //console.log('ws - forwarded data to server');
+    if (argv.debug) {
+      logHex(ev.data, 'client');
+    }
   });
 
   driver.on('close', function(ev) {
