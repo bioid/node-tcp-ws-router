@@ -39,7 +39,7 @@ var server = net.createServer(function(socket) {
       client.on('data', function(data) {
         // data from the TCP server - send to the client
         if (argv.debug) {
-          logHex(data, 'server');
+          logHex(data, 'client');
         }
         if (!socket.isWebSocket) {
           // our client is connected through tcp, send the data straight through
@@ -75,7 +75,7 @@ var server = net.createServer(function(socket) {
       // THIS IS RAW TCP - FORWARD IT AS IS
       client.write(data);
       if (argv.debug) {
-        logHex(data, 'client');
+        logHex(data, 'server');
       }
     }
   });
@@ -83,7 +83,7 @@ var server = net.createServer(function(socket) {
   driver.on('message', function(ev) {
     client.write(ev.data);
     if (argv.debug) {
-      logHex(ev.data, 'client');
+      logHex(ev.data, 'server');
     }
   });
 
