@@ -31,6 +31,7 @@ var logHex = function(data, conn) {
 }
 
 var server = net.createServer(function(socket) {
+  var firstPacket = true;
   socket.isWebSocket = false;
   var driver = websocket.server({'protocols':'binary'});
 
@@ -69,14 +70,15 @@ var server = net.createServer(function(socket) {
   });
 
   socket.on('data', function(data) {
-    var request = parser.parseRequest(data.toString());
-    if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
-      // TCP
-      // THIS IS RAW TCP - FORWARD IT AS IS
-      client.write(data);
-      if (argv.debug) {
-        logHex(data, 'server');
+    if (firstPacket) {
+      firstPacket = false;
+      var request = parser.parseRequest(data.toString());
+      if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
+        client.write(data);    
       }
+    }
+    else if (!firstPacket && !socket.isWebSocket) {
+      client.write(data)
     }
   });
 
