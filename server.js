@@ -92,8 +92,8 @@ var server = net.createServer(function(socket) {
     });
 
     driver.on('close', function(ev) {
-      socket.end();
-      tcpconn.end();
+      socket.destroy();
+      tcpconn.destroy();
       if (argv.debug && argv.debug != 'hexonly') {
         console.log('websocket closed');
       }
@@ -103,13 +103,13 @@ var server = net.createServer(function(socket) {
       if (argv.debug && argv.debug != 'hexonly') {
         console.log('socket to client closed');
       }
-      socket.end();
-      tcpconn.end();
+      socket.destroy();
+      tcpconn.destroy();
     });
 
     tcpconn.on('close', function(ev) {
-      tcpconn.end();
-      socket.end();
+      tcpconn.destroy();
+      socket.destroy();
     });
     socket.on('error', function(ev) { console.log(ev); });
 
@@ -119,6 +119,9 @@ var server = net.createServer(function(socket) {
     console.log(err);
     console.log('ERROR DETECTED - SHUTTING DOWN THE SOCKET');
     socket.destroy();
+    if (tcpconn) {
+      tcpconn.destroy();
+    }
   }
 
 });
