@@ -58,7 +58,7 @@ var server = net.createServer(function(socket) {
           }
           tcpconn.end();
         });
-        tcpconn.on('err', function(ev) {
+        tcpconn.on('error', function(ev) {
           console.log(ev);
           tcpconn.destroy();
           socket.destroy();
