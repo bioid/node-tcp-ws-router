@@ -58,6 +58,11 @@ var server = net.createServer(function(socket) {
           }
           tcpconn.end();
         });
+        tcpconn.on('err', function(ev) {
+          console.log(ev);
+          tcpconn.destroy();
+          socket.destroy();
+        });
     });
 
     driver.on('connect', function() {
@@ -116,11 +121,7 @@ var server = net.createServer(function(socket) {
       socket.destroy();
       tcpconn.destroy();
     });
-    tcpconn.on('err', function(ev) {
-      console.log(ev);
-      tcpconn.destroy();
-      socket.destroy();
-    })
+
     socket.pipe(driver.io).pipe(socket);
   }
   catch (err) {
