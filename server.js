@@ -31,7 +31,6 @@ var logHex = function(data, conn) {
 }
 
 var server = net.createServer(function(socket) {
-  var firstPacket = true;
   socket.isWebSocket = false;
   var driver = websocket.server({'protocols':'binary'});
 
@@ -82,8 +81,8 @@ var server = net.createServer(function(socket) {
     }
     
     socket.on('data', function(data) {
-      if (!firstPacket && !socket.isWebSocket) {
-        tcpconn.write(data)
+      if (!socket.isWebSocket) {
+        tcpconn.write(data);
       if (argv.debug) { logHex(data, 'server'); }
       }
     });
