@@ -72,20 +72,21 @@ var server = net.createServer(function(socket) {
     }
   });
 
-  socket.on('data', function(data) {
-    if (firstPacket) {
-      console.log('first packet');
-      firstPacket = false;
-      var request = parser.parseRequest(data.toString());
-      if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
-        tcpconn.write(data);
-        if (argv.debug) { logHex(data, 'server'); }
-      }
-    }
-    else if (!firstPacket && !socket.isWebSocket) {
-      tcpconn.write(data)
+  socket.once('data', function(data) {
+    console.log('first packet');
+    firstPacket = false;
+    var request = parser.parseRequest(data.toString());
+    if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
+      tcpconn.write(data);
       if (argv.debug) { logHex(data, 'server'); }
     }
+    
+    socket.on('data', function(data) {
+      if (!firstPacket && !socket.isWebSocket) {
+        tcpconn.write(data)
+      if (argv.debug) { logHex(data, 'server'); }
+      }
+    });
   });
 
   driver.on('message', function(ev) {
