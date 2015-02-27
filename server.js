@@ -52,12 +52,10 @@ var direction = function(from, to) {
 var server = net.createServer(function(socket) {
   socket.isWebSocket = false;
   var driver = websocket.server({'protocols':'binary'});
-  console.log(socket.remoteAddress + ':' + socket.remotePort);
   var serverAddress = null;
   var clientAddress = socket.remoteAddress + ':' + socket.remotePort;
 
   var tcpconn = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
-    console.log(tcpconn.remoteAddress);
     serverAddress = tcpconn.remoteAddress + ':' + tcpconn.remotePort;
     // tcpconn is the connection to the destination TCP server
       tcpconn.on('data', function(data) {
@@ -97,7 +95,6 @@ var server = net.createServer(function(socket) {
   });
 
   socket.once('data', function(data) {
-    console.log('first packet');
     firstPacket = false;
     var request = parser.parseRequest(data.toString());
     if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
