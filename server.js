@@ -35,8 +35,8 @@ var formatDate = function(date) {
   return hours + ":" + minutes + ":" + seconds;
 };
 
-var logHex = function(data, conn) {
-  var hex = formatDate(new Date(Date.now())) + ' ' + hexy.hexy(data, {format: 'twos'}).replace(/\n$/, '').replace(/\n/g, "\n         ");
+var logHex = function(data, conn, direction) {
+  var hex = formatDate(new Date(Date.now())) + direction + hexy.hexy(data, {format: 'twos'}).replace(/\n/g, "\n         ");
   if (conn && argv[conn]) {
     streams[conn].write(hex);
   }
@@ -45,16 +45,25 @@ var logHex = function(data, conn) {
   }
 }
 
+var direction = function(from, to) {
+  return ' IP ' + from + ' > ' + to + ': \n         ';
+}
+
 var server = net.createServer(function(socket) {
   socket.isWebSocket = false;
   var driver = websocket.server({'protocols':'binary'});
+  console.log(socket.remoteAddress + ':' + socket.remotePort);
+  var serverAddress = null;
+  var clientAddress = socket.remoteAddress + ':' + socket.remotePort;
 
   var tcpconn = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
+    console.log(tcpconn.remoteAddress);
+    serverAddress = tcpconn.remoteAddress + ':' + tcpconn.remotePort;
     // tcpconn is the connection to the destination TCP server
       tcpconn.on('data', function(data) {
         // data from the TCP server - send to the client
         if (argv.debug) {
-          logHex(data, 'client');
+          logHex(data, 'client', direction(serverAddress, clientAddress));
         }
         if (!socket.isWebSocket) {
           // our client is connected through tcp, send the data straight through
@@ -78,6 +87,7 @@ var server = net.createServer(function(socket) {
       });
   });
 
+
   driver.on('connect', function() {
     // if the connection is a websocket, let the driver handle it
     if (websocket.isWebSocket(driver)) {
@@ -92,13 +102,13 @@ var server = net.createServer(function(socket) {
     var request = parser.parseRequest(data.toString());
     if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
       tcpconn.write(data);
-      if (argv.debug) { logHex(data, 'server'); }
+      if (argv.debug) { logHex(data, 'server', direction(clientAddress, serverAddress)); }
     }
     
     socket.on('data', function(data) {
       if (!socket.isWebSocket) {
         tcpconn.write(data);
-      if (argv.debug) { logHex(data, 'server'); }
+      if (argv.debug) { logHex(data, 'server', direction(clientAddress, serverAddress)); }
       }
     });
   });
@@ -106,7 +116,7 @@ var server = net.createServer(function(socket) {
   driver.on('message', function(ev) {
     tcpconn.write(ev.data);
     if (argv.debug) {
-      logHex(ev.data, 'server');
+      logHex(ev.data, 'server', direction(clientAddress, serverAddress));
     }
   });
 
