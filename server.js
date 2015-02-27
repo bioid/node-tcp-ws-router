@@ -17,11 +17,26 @@ if (argv.client) {
 }
 
 var formatDate = function(date) {
-  return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
+
+  // the above date.get...() functions return a single digit
+  // so prepend the zero when needed
+  if (hours < 10) 
+    hours = '0' + hours;
+
+  if (minutes < 10) 
+    minutes = '0' + minutes;
+
+  if (seconds < 10) 
+    seconds = '0' + seconds;
+
+  return hours + ":" + minutes + ":" + seconds;
 };
 
 var logHex = function(data, conn) {
-  var hex = formatDate(new Date(Date.now())) + ' ' + hexy.hexy(data, {format: 'twos'});
+  var hex = formatDate(new Date(Date.now())) + ' ' + hexy.hexy(data, {format: 'twos'}).replace(/\n$/, '').replace(/\n/g, "\n         ");
   if (conn && argv[conn]) {
     streams[conn].write(hex);
   }
