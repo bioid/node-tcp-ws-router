@@ -2,52 +2,8 @@ var net = require('net'),
     parser = require('http-string-parser'),
     websocket = require('websocket-driver'),
     argv = require('yargs').argv,
-    fs = require('fs'),
-    hexy = require('hexy'),
-    config = require('./config.js');
-
-var streams = {}
-
-if (argv.server) {
-  streams.server = fs.createWriteStream(argv.server);
-}
-
-if (argv.client) {
-  streams.client = fs.createWriteStream(argv.client);
-}
-
-var formatDate = function(date) {
-  var hours = date.getHours();
-  var minutes = date.getMinutes();
-  var seconds = date.getSeconds();
-
-  // the above date.get...() functions return a single digit
-  // so prepend the zero when needed
-  if (hours < 10) 
-    hours = '0' + hours;
-
-  if (minutes < 10) 
-    minutes = '0' + minutes;
-
-  if (seconds < 10) 
-    seconds = '0' + seconds;
-
-  return hours + ":" + minutes + ":" + seconds;
-};
-
-var logHex = function(data, conn, direction) {
-  var hex = formatDate(new Date(Date.now())) + direction + hexy.hexy(data, {format: 'twos'}).replace(/\n/g, "\n         ");
-  if (conn && argv[conn]) {
-    streams[conn].write(hex);
-  }
-  else {
-    return console.log(hex);
-  }
-}
-
-var direction = function(from, to) {
-  return ' IP ' + from + ' > ' + to + ': \n         ';
-}
+    config = require('./config'),
+    logger = require('./lib/loghex')(argv);
 
 var server = net.createServer(function(socket) {
   socket.isWebSocket = false;
@@ -60,9 +16,7 @@ var server = net.createServer(function(socket) {
     // tcpconn is the connection to the destination TCP server
       tcpconn.on('data', function(data) {
         // data from the TCP server - send to the client
-        if (argv.debug) {
-          logHex(data, 'client', direction(serverAddress, clientAddress));
-        }
+        logger.logHex({data: data, from: serverAddress, to: clientAddress});
         if (!socket.isWebSocket) {
           // our client is connected through tcp, send the data straight through
           socket.write(data);
@@ -99,22 +53,20 @@ var server = net.createServer(function(socket) {
     var request = parser.parseRequest(data.toString());
     if (Object.keys(request.headers).length === 0 && !socket.isWebSocket) {
       tcpconn.write(data);
-      if (argv.debug) { logHex(data, 'server', direction(clientAddress, serverAddress)); }
+      logger.logHex({data: data, from: clientAddress, to: serverAddress}); 
     }
     
     socket.on('data', function(data) {
       if (!socket.isWebSocket) {
         tcpconn.write(data);
-      if (argv.debug) { logHex(data, 'server', direction(clientAddress, serverAddress)); }
+      logger.logHex({data: data, from: clientAddress, to: serverAddress}); 
       }
     });
   });
 
   driver.on('message', function(ev) {
     tcpconn.write(ev.data);
-    if (argv.debug) {
-      logHex(ev.data, 'server', direction(clientAddress, serverAddress));
-    }
+    logger.logHex({data: data, from: clientAddress, to: serverAddress}); 
   });
 
   driver.on('close', function(ev) {
@@ -143,6 +95,6 @@ var server = net.createServer(function(socket) {
 });
 
 server.listen(config.LISTEN_PORT);
-if (argv.debug != 'hexonly') {
+if (argv.debug && argv.debug != 'hexonly') {
   console.log('ws/tcp router listening on '+ config.LISTEN_PORT +' - routing to '+ config.TCP_SERVER.HOST +':'+ config.TCP_SERVER.PORT);
 }
