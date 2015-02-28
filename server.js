@@ -14,29 +14,29 @@ var server = net.createServer(function(socket) {
   var tcpconn = net.connect({host: config.TCP_SERVER.HOST, port: config.TCP_SERVER.PORT}, function() {
     serverAddress = tcpconn.remoteAddress + ':' + tcpconn.remotePort;
     // tcpconn is the connection to the destination TCP server
-      tcpconn.on('data', function(data) {
-        // data from the TCP server - send to the client
-        logger.logHex({data: data, from: serverAddress, to: clientAddress});
-        if (!socket.isWebSocket) {
-          // our client is connected through tcp, send the data straight through
-          socket.write(data);
-        }
-        else {
-          // our client is connection through ws, send the data with ws
-          driver.binary(data);
-        }
-      });
-      tcpconn.on('close', function(ev) {
-        if (argv.debug && argv.debug != 'hexonly') {
-          console.log('socket to server closed');
-        }
-        tcpconn.end();
-      });
-      tcpconn.on('error', function(ev) {
-        console.log(ev);
-        tcpconn.destroy();
-        socket.destroy();
-      });
+    tcpconn.on('data', function(data) {
+      // data from the TCP server - send to the client
+      logger.logHex({data: data, from: serverAddress, to: clientAddress});
+      if (!socket.isWebSocket) {
+        // our client is connected through tcp, send the data straight through
+        socket.write(data);
+      }
+      else {
+        // our client is connection through ws, send the data with ws
+        driver.binary(data);
+      }
+    });
+    tcpconn.on('close', function(ev) {
+      if (argv.debug && argv.debug != 'hexonly') {
+        console.log('socket to server closed');
+      }
+      tcpconn.end();
+    });
+    tcpconn.on('error', function(ev) {
+      console.log(ev);
+      tcpconn.destroy();
+      socket.destroy();
+    });
   });
 
 
