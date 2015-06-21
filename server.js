@@ -66,7 +66,7 @@ var server = net.createServer(function(socket) {
 
   driver.on('message', function(ev) {
     tcpconn.write(ev.data);
-    logger.logHex({data: data, from: clientAddress, to: serverAddress}); 
+    logger.logHex({data: ev.data, from: clientAddress, to: serverAddress}); 
   });
 
   driver.on('close', function(ev) {
